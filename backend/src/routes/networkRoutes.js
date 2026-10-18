@@ -1,0 +1,10 @@
+const express = require("express");
+const { protect, authorize } = require("../middleware/authMiddleware");
+const { getNetworkHospitals, getConnections, requestConnection, decideConnection } = require("../controllers/networkController");
+const router = express.Router();
+router.use(protect);
+router.get("/hospitals", authorize("HOSPITAL_ADMIN", "DOCTOR", "EMERGENCY_STAFF", "TRANSFER_COORDINATOR"), getNetworkHospitals);
+router.get("/connections", authorize("HOSPITAL_ADMIN", "TRANSFER_COORDINATOR"), getConnections);
+router.post("/connections", authorize("HOSPITAL_ADMIN", "TRANSFER_COORDINATOR"), requestConnection);
+router.patch("/connections/:id/decision", authorize("HOSPITAL_ADMIN", "TRANSFER_COORDINATOR"), decideConnection);
+module.exports = router;

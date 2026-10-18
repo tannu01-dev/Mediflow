@@ -1,0 +1,11 @@
+const express = require("express");
+const { protect, authorize } = require("../middleware/authMiddleware");
+const { createReferral, listReferrals, decideReferral, cancelReferral } = require("../controllers/referralController");
+const { auditAction } = require("../middleware/auditMiddleware");
+const router = express.Router();
+router.use(protect);
+router.get("/", authorize("HOSPITAL_ADMIN", "DOCTOR", "EMERGENCY_STAFF", "TRANSFER_COORDINATOR"), listReferrals);
+router.post("/", authorize("HOSPITAL_ADMIN", "DOCTOR", "EMERGENCY_STAFF", "TRANSFER_COORDINATOR"), auditAction({ action: "REFERRAL_CREATED", entityType: "OTHER", description: "Referral creation attempted" }), createReferral);
+router.patch("/:id/decision", authorize("HOSPITAL_ADMIN", "TRANSFER_COORDINATOR"), auditAction({ action: "REFERRAL_DECISION_RECORDED", entityType: "OTHER", description: "Referral decision attempted", getEntityId: (req) => req.params.id }), decideReferral);
+router.patch("/:id/cancel", authorize("HOSPITAL_ADMIN", "TRANSFER_COORDINATOR", "DOCTOR", "EMERGENCY_STAFF"), auditAction({ action: "REFERRAL_CANCELLED", entityType: "OTHER", description: "Referral cancellation attempted", getEntityId: (req) => req.params.id }), cancelReferral);
+module.exports = router;
